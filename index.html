@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Arweave File Explorer</title>
+    <script src="https://unpkg.com/arweave/bundles/web.bundle.js"></script>
+    <!-- https://github.com/ArweaveTeam/arweave-js -->
+    <script>
+    function logTxTags(tx) {
+    	// console.log(tx.id);
+    	let contentType = "";
+    	
+    	tx['tags'].forEach(tag => {
+			let key = tag.get('name', {decode: true, string: true});
+			let value = tag.get('value', {decode: true, string: true});
+			// console.log(`${key} : ${value}`);
+			
+			if(key == "Content-Type") contentType = value;
+		});
+		// console.log("");
+		
+		if(contentType?.indexOf("image") != -1){
+			let tmp = document.createElement('img');
+			tmp.src = "https://www.arweave.net/" + tx.id;
+			tmp.style = "width: 19%;";
+			document.body.appendChild(tmp);
+		}
+    	// image/jpeg
+    	// image/png
+    }
+    
+    const arweave = Arweave.init({});
+    arweave.network.getInfo().then((info) => {
+		const { current: currentBlock } = info;
+		
+		console.log("currentBlock: " + currentBlock);
+		
+		document.getElementById("blockInfoElement").innerText = "Loading current block #" + info.height + " images";
+		
+		arweave.blocks.get(currentBlock).then(blockData => {
+			// console.log(blockData);
+			const { txs } = blockData;
+			txs.forEach(
+				tx => arweave.transactions.get(tx).then(
+					transaction => {
+						logTxTags(transaction)
+					}
+				)
+			);
+		});
+    });
+
+
+    </script>
+</head>
+<body>
+<h1>Arweave File Explorer</h1>
+<span id="blockInfoElement"></span>
+<br />
+<br />
+
+</body>
+</html>
