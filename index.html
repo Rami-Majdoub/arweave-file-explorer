@@ -6,24 +6,31 @@
     <script src="https://unpkg.com/arweave/bundles/web.bundle.js"></script>
     <!-- https://github.com/ArweaveTeam/arweave-js -->
     <script>
-    function logTxTags(tx) {
-    	// console.log(tx.id);
-    	let contentType = "";
-    	
+    function createTagsObject(tx){
+    	tags = {};
     	tx['tags'].forEach(tag => {
-			let key = tag.get('name', {decode: true, string: true});
-			let value = tag.get('value', {decode: true, string: true});
+			const key = tag.get('name', {decode: true, string: true});
+			const value = tag.get('value', {decode: true, string: true});
 			// console.log(`${key} : ${value}`);
 			
-			if(key == "Content-Type") contentType = value;
+			tags[key] = value;
 		});
-		// console.log("");
+		return tags;
+    }
+
+	function createImage(txId){
+		const tmp = document.createElement('img');
+		tmp.src = "https://www.arweave.net/" + txId;
+		tmp.style = "width: 19%;";
+		document.body.appendChild(tmp);
+	}
+	
+    function logTxTags(tx) {
+    	const tags = createTagsObject(tx);
+    	const contentType = tags["Content-Type"];
 		
-		if(contentType?.indexOf("image") != -1){
-			let tmp = document.createElement('img');
-			tmp.src = "https://www.arweave.net/" + tx.id;
-			tmp.style = "width: 19%;";
-			document.body.appendChild(tmp);
+		if (contentType && contentType.indexOf("image") != -1){
+			createImage(tx.id);
 		}
     	// image/jpeg
     	// image/png
